@@ -9,8 +9,8 @@ export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
-export function formatCurrency(amount: number, currency = 'MAD'): string {
-  return new Intl.NumberFormat('fr-MA', {
+export function formatCurrency(amount: number, currency = 'EUR'): string {
+  return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency,
     minimumFractionDigits: 2,

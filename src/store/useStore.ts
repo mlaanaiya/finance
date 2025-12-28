@@ -2,9 +2,12 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
   User,
+  UserProfile,
+  ChatMessage,
   Transaction,
   Budget,
   FinancialGoal,
+  FinancialProblem,
   Goal,
   Habit,
   Event,
@@ -26,6 +29,10 @@ interface Store {
   login: (email: string, password: string) => boolean;
   logout: () => void;
 
+  // Profile
+  profile: UserProfile | null;
+  updateProfile: (profile: Partial<UserProfile>) => void;
+
   // UI
   darkMode: boolean;
   sidebarOpen: boolean;
@@ -33,10 +40,16 @@ interface Store {
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
 
+  // AI Chat
+  chatMessages: ChatMessage[];
+  addChatMessage: (message: ChatMessage) => void;
+  clearChat: () => void;
+
   // Finance
   transactions: Transaction[];
   budgets: Budget[];
   financialGoals: FinancialGoal[];
+  financialProblems: FinancialProblem[];
   addTransaction: (transaction: Transaction) => void;
   updateTransaction: (id: string, transaction: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
@@ -46,6 +59,9 @@ interface Store {
   addFinancialGoal: (goal: FinancialGoal) => void;
   updateFinancialGoal: (id: string, goal: Partial<FinancialGoal>) => void;
   deleteFinancialGoal: (id: string) => void;
+  addFinancialProblem: (problem: FinancialProblem) => void;
+  updateFinancialProblem: (id: string, problem: Partial<FinancialProblem>) => void;
+  deleteFinancialProblem: (id: string) => void;
 
   // Goals
   goals: Goal[];
@@ -106,9 +122,42 @@ interface Store {
 const VALID_EMAIL = 'mlaanaiya@gmail.com';
 const VALID_PASSWORD = 'GREFFEABOHLA022025';
 
+const defaultProfile: UserProfile = {
+  id: '1',
+  personalInfo: {
+    firstName: 'Mohamed',
+    lastName: 'Laanaiya',
+    occupation: '',
+    city: '',
+    country: 'France',
+  },
+  financialInfo: {
+    monthlyIncome: 0,
+    monthlyExpenses: 0,
+    savingsGoal: 20,
+    riskTolerance: 'medium',
+    debts: [],
+  },
+  healthInfo: {
+    height: undefined,
+    targetWeight: undefined,
+    allergies: [],
+    conditions: [],
+  },
+  preferences: {
+    notifications: true,
+    weeklyReport: true,
+    language: 'fr',
+    currency: 'EUR',
+  },
+  lifeGoals: [],
+  challenges: [],
+  priorities: [],
+};
+
 export const useStore = create<Store>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Auth
       user: null,
       isAuthenticated: false,
@@ -121,6 +170,7 @@ export const useStore = create<Store>()(
               avatar: undefined,
             },
             isAuthenticated: true,
+            profile: defaultProfile,
           });
           return true;
         }
@@ -130,17 +180,31 @@ export const useStore = create<Store>()(
         set({ user: null, isAuthenticated: false });
       },
 
+      // Profile
+      profile: null,
+      updateProfile: (profileUpdate) =>
+        set((state) => ({
+          profile: state.profile ? { ...state.profile, ...profileUpdate } : null,
+        })),
+
       // UI
-      darkMode: true,
+      darkMode: false,
       sidebarOpen: true,
       toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
+      // AI Chat
+      chatMessages: [],
+      addChatMessage: (message) =>
+        set((state) => ({ chatMessages: [...state.chatMessages, message] })),
+      clearChat: () => set({ chatMessages: [] }),
+
       // Finance
       transactions: [],
       budgets: [],
       financialGoals: [],
+      financialProblems: [],
       addTransaction: (transaction) =>
         set((state) => ({ transactions: [...state.transactions, transaction] })),
       updateTransaction: (id, transaction) =>
@@ -174,6 +238,18 @@ export const useStore = create<Store>()(
       deleteFinancialGoal: (id) =>
         set((state) => ({
           financialGoals: state.financialGoals.filter((g) => g.id !== id),
+        })),
+      addFinancialProblem: (problem) =>
+        set((state) => ({ financialProblems: [...state.financialProblems, problem] })),
+      updateFinancialProblem: (id, problem) =>
+        set((state) => ({
+          financialProblems: state.financialProblems.map((p) =>
+            p.id === id ? { ...p, ...problem } : p
+          ),
+        })),
+      deleteFinancialProblem: (id) =>
+        set((state) => ({
+          financialProblems: state.financialProblems.filter((p) => p.id !== id),
         })),
 
       // Goals
@@ -319,10 +395,13 @@ export const useStore = create<Store>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        profile: state.profile,
         darkMode: state.darkMode,
+        chatMessages: state.chatMessages,
         transactions: state.transactions,
         budgets: state.budgets,
         financialGoals: state.financialGoals,
+        financialProblems: state.financialProblems,
         goals: state.goals,
         habits: state.habits,
         events: state.events,

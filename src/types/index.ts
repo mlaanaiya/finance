@@ -5,6 +5,80 @@ export interface User {
   avatar?: string;
 }
 
+// Profile types
+export interface UserProfile {
+  id: string;
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    birthDate?: string;
+    occupation?: string;
+    city?: string;
+    country?: string;
+  };
+  financialInfo: {
+    monthlyIncome?: number;
+    monthlyExpenses?: number;
+    savingsGoal?: number;
+    riskTolerance?: 'low' | 'medium' | 'high';
+    debts?: { name: string; amount: number; interestRate: number }[];
+  };
+  healthInfo: {
+    height?: number;
+    targetWeight?: number;
+    allergies?: string[];
+    conditions?: string[];
+  };
+  preferences: {
+    notifications: boolean;
+    weeklyReport: boolean;
+    language: string;
+    currency: string;
+  };
+  lifeGoals: string[];
+  challenges: string[];
+  priorities: string[];
+}
+
+// AI Chat types
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  actions?: AIAction[];
+}
+
+export interface AIAction {
+  type: 'create_goal' | 'create_budget' | 'add_habit' | 'update_profile' | 'add_transaction' | 'create_reminder';
+  data: Record<string, unknown>;
+  executed: boolean;
+}
+
+// Financial Problem types
+export interface FinancialProblem {
+  id: string;
+  title: string;
+  description: string;
+  category: 'debt' | 'savings' | 'investment' | 'budget' | 'income' | 'emergency';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  targetAmount?: number;
+  currentProgress: number;
+  deadline?: string;
+  steps: FinancialStep[];
+  status: 'active' | 'resolved' | 'paused';
+  createdAt: string;
+}
+
+export interface FinancialStep {
+  id: string;
+  title: string;
+  description?: string;
+  targetAmount?: number;
+  completed: boolean;
+  dueDate?: string;
+}
+
 // Finance types
 export interface Transaction {
   id: string;
